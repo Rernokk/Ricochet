@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f3758f8f58fdef43803eb9be1df0608, type: 3}
   m_Name: PhotonServerSettings
   m_EditorClassIdentifier: 
-  AppID: 5f7db7f2-4c56-4cd3-9c4d-ad71a0bdba09
+  AppID: 159191bf-0fbe-4e40-b875-c57ee2aaa6f3
   VoiceAppID: 
   ChatAppID: 
   HostType: 1
-  PreferredRegion: 0
+  PreferredRegion: 6
   EnabledRegions: -1
   Protocol: 0
   ServerAddress: 
