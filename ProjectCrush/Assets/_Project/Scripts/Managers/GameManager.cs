@@ -8,6 +8,6 @@ public class GameManager : Photon.PunBehaviour
 	private GameObject playerPrefab;
 	void Start()
 	{
-		PhotonNetwork.Instantiate(this.playerPrefab.name, new Vector3(0, 5f, 0f), Quaternion.identity, 0);
+		PhotonNetwork.Instantiate(this.playerPrefab.name, new Vector3(0, 0, 0f), Quaternion.identity, 0);
 	}
 }

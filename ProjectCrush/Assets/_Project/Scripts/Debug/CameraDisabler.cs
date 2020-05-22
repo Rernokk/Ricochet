@@ -12,6 +12,7 @@ public class CameraDisabler : Photon.PunBehaviour
 		if (!photonView.isMine)
 		{
 			refCam.SetActive(false);
+			refCam.transform.tag = "Untagged";
 			return;
 		}
 	}
