@@ -37,4 +37,7 @@ MonoBehaviour:
   - PunRespawn
   - RequestForPickupItems
   - RequestForPickupTimes
+  - UpdateColor
+  - UpdateColorRPC
+  - BasicTestRPC
   DisableAutoOpenWizard: 1

@@ -242,6 +242,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b760b0d010c3af4498e915665c93e8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  leaderboardPrefab: {fileID: 3087692503742232903, guid: a8e346042c3456a40bfacaff12f9fb83,
+    type: 3}
 --- !u!4 &410550313
 Transform:
   m_ObjectHideFlags: 0

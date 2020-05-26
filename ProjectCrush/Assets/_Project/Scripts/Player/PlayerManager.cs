@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using UnityEngine;
+using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
-public class PlayerManager : Photon.PunBehaviour
+public class PlayerManager : Photon.PunBehaviour, IPunObservable
 {
 	[SerializeField]
 	private GameObject projectilePrefab;
@@ -12,7 +13,12 @@ public class PlayerManager : Photon.PunBehaviour
 	private float playerSpeed = PlayerCharacterSettings.PLAYER_SPEED;
 	private float ammoRegenTimer = PlayerCharacterSettings.AMMO_RECHARGE;
 	private int currentHealth = PlayerCharacterSettings.MAX_HEALTH;
+
+	[SerializeField]
 	private int currentAmmo = PlayerCharacterSettings.MAX_AMMO;
+
+	[SerializeField]
+	private Text textWindow;
 
 	private Rigidbody rgd;
 
@@ -68,6 +74,18 @@ public class PlayerManager : Photon.PunBehaviour
 		CurrentHealth -= amount;
 	}
 
+	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+	{
+		if (stream.isWriting)
+		{
+			stream.SendNext(CurrentHealth);
+		}
+		else
+		{
+			CurrentHealth = (int)stream.ReceiveNext();
+		}
+	}
+
 	#endregion Public Methods
 
 	#region Private Methods
@@ -79,7 +97,7 @@ public class PlayerManager : Photon.PunBehaviour
 
 	private void Update()
 	{
-		if (!this.transform.root.GetComponent<PhotonView>().isMine)
+		if (!photonView.isMine)
 		{
 			return;
 		}
@@ -144,6 +162,21 @@ public class PlayerManager : Photon.PunBehaviour
 		if (Input.GetKeyDown(KeyCode.Mouse0))
 		{
 			FireProjectile(Input.mousePosition);
+		}
+
+		if (Input.GetKeyDown(KeyCode.J))
+		{
+			LeaderboardManager.Instance.CallTestRPC();
+		}
+
+		if (Input.GetKeyDown(KeyCode.K))
+		{
+			textWindow.text = LeaderboardManager.Instance.GetDictKeys();
+		}
+
+		if (Input.GetKeyDown(KeyCode.L))
+		{
+			GameManager.ReturnToMainMenu();
 		}
 	}
 

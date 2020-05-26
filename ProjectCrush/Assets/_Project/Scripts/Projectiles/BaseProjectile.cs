@@ -50,8 +50,20 @@ public class BaseProjectile : Photon.PunBehaviour
 
 	protected virtual void DestroyProjectile()
 	{
+		if (PhotonNetwork.isMasterClient)
+		{
+			LeaderboardManager mgr = GameObject.FindGameObjectWithTag("LeaderboardManager").GetComponent<LeaderboardManager>();
+			mgr.CallTestRPC();
+		}
+
+		transform.Find("VFX").GetComponent<ParticleSystem>().Stop();
+		transform.Find("VFX").parent = null;
+
+		// Owner of object deletes projectile.
 		if (photonView.isMine)
+		{
 			PhotonNetwork.Destroy(gameObject);
+		}
 	}
 
 	#endregion Protected Methods
