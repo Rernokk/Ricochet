@@ -14,7 +14,8 @@ public class GameManager : Photon.PunBehaviour
 
 	public void Start()
 	{
-		PhotonNetwork.Instantiate(this.playerPrefab.name, new Vector3(Random.Range(-5f, 5f), 0, Random.Range(-5f, 5f)).normalized * 5f, Quaternion.identity, 0);
+		GameObject myPlayer = PhotonNetwork.Instantiate(this.playerPrefab.name, new Vector3(Random.Range(-5f, 5f), 0, Random.Range(-5f, 5f)).normalized * 5f, Quaternion.identity, 0);
+		myPlayer.GetComponent<PlayerManager>().UpdatePlayerCustomizations();
 
 		//Master, spawn controllers.
 		if (PhotonNetwork.isMasterClient)
@@ -26,10 +27,11 @@ public class GameManager : Photon.PunBehaviour
 
 	public static void ReturnToMainMenu()
 	{
-		if (PhotonNetwork.isMasterClient)
-		{
-			PhotonNetwork.LeaveRoom();
-		}
+		PhotonNetwork.LeaveRoom();
+	}
+
+	public override void OnLeftRoom()
+	{
 		SceneManager.LoadScene("MainMenu");
 	}
 }

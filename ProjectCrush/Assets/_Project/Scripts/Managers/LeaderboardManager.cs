@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using Facepunch.Steamworks;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class LeaderboardManager : Photon.PunBehaviour, IPunObservable
@@ -9,56 +11,63 @@ public class LeaderboardManager : Photon.PunBehaviour, IPunObservable
 	[SerializeField]
 	private int Counter;
 
-	private Dictionary<int, int> TestDict = new Dictionary<int, int>();
+	//ID: Kills
+	public Dictionary<int, int> Leaderboard = new Dictionary<int, int>();
 
 	public void Start()
 	{
 		if (Instance == null)
 		{
 			Instance = this;
-		} else if (Instance != this)
+		}
+		else if (Instance != this)
 		{
 			Destroy(this);
 			return;
 		}
 	}
 
+	private void Update()
+	{
+		// Duplicate objects instantiated from both clients without check.
+		if (!PhotonNetwork.isMasterClient)
+			return;
+	}
+
+
 	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
 	{
 		if (stream.isWriting)
 		{
 			stream.SendNext(Counter);
-			stream.SendNext(TestDict);
+			stream.SendNext(Leaderboard);
 		}
 		else
 		{
 			Counter = (int)stream.ReceiveNext();
-			TestDict = (Dictionary<int, int>)stream.ReceiveNext();
+			Leaderboard = (Dictionary<int, int>)stream.ReceiveNext();
 		}
 	}
 
-	public void CallTestRPC()
+	public void GrantKillToPlayer(int id)
 	{
-		photonView.RPC("BasicTestRPC", PhotonTargets.MasterClient);
+		photonView.RPC("GrantKillRPC", PhotonTargets.AllViaServer, id);
 	}
 
 	[PunRPC]
-	private void BasicTestRPC()
+	private void GrantKillRPC(int id)
 	{
-		print("Writing from RPC!");
-		Counter++;
-		TestDict.Add(Random.Range(0, 10000), Random.Range(0, 10000));
+		Leaderboard[id]++;
 	}
 
-	public string GetDictKeys()
+	public static void UpdateLeaderboard()
 	{
-		string ret = "";
-
-		foreach (int k in TestDict.Keys)
+		foreach (PhotonPlayer player in PhotonNetwork.playerList)
 		{
-			ret += $"K:{k},V:{TestDict[k]}\n";
+			if (!Instance.Leaderboard.ContainsKey(player.ID))
+			{
+				Instance.Leaderboard.Add(player.ID, 0);
+			}
 		}
-
-		return ret;
 	}
 }

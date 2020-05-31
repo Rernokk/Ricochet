@@ -10,6 +10,9 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 	[SerializeField]
 	private GameObject projectilePrefab;
 
+	[SerializeField]
+	private GameObject playerUI;
+
 	private float playerSpeed = PlayerCharacterSettings.PLAYER_SPEED;
 	private float ammoRegenTimer = PlayerCharacterSettings.AMMO_RECHARGE;
 	private int currentHealth = PlayerCharacterSettings.MAX_HEALTH;
@@ -18,7 +21,7 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 	private int currentAmmo = PlayerCharacterSettings.MAX_AMMO;
 
 	[SerializeField]
-	private Text textWindow;
+	private MeshRenderer baseMesh;
 
 	private Rigidbody rgd;
 
@@ -86,6 +89,18 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 		}
 	}
 
+	public void UpdatePlayerCustomizations()
+	{
+		photonView.RPC("UpdateCustomizationsRPC", PhotonTargets.AllBuffered, new object[]
+		{ PlayerPrefs.GetFloat("PlayerRedChannel", 1), PlayerPrefs.GetFloat("PlayerGreenChannel", 1), PlayerPrefs.GetFloat("PlayerBlueChannel", 1), });
+	}
+	
+	[PunRPC]
+	private void UpdateCustomizationsRPC(float r, float g, float b)
+	{
+		baseMesh.material.color = new Color(r, g, b);
+	}
+
 	#endregion Public Methods
 
 	#region Private Methods
@@ -93,6 +108,12 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 	private void Start()
 	{
 		rgd = transform.GetComponent<Rigidbody>();
+
+		if (photonView.isMine)
+		{
+			playerUI = Instantiate(playerUI, Vector3.zero, Quaternion.identity);
+			playerUI.GetComponent<UIController>().PlayerReference = this;
+		}
 	}
 
 	private void Update()
@@ -162,16 +183,6 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 		if (Input.GetKeyDown(KeyCode.Mouse0))
 		{
 			FireProjectile(Input.mousePosition);
-		}
-
-		if (Input.GetKeyDown(KeyCode.J))
-		{
-			LeaderboardManager.Instance.CallTestRPC();
-		}
-
-		if (Input.GetKeyDown(KeyCode.K))
-		{
-			textWindow.text = LeaderboardManager.Instance.GetDictKeys();
 		}
 
 		if (Input.GetKeyDown(KeyCode.L))
