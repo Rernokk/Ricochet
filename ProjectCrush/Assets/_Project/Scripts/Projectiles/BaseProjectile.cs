@@ -46,7 +46,8 @@ public class BaseProjectile : Photon.PunBehaviour
 		}
 		else
 		{
-			photonView.RPC("SpawnFXRPC", PhotonTargets.All);
+			if (photonView.isMine)
+				photonView.RPC("SpawnFXRPC", PhotonTargets.All, new object[] { transform.position.x, transform.position.y, transform.position.z });
 		}
 
 		if (remainingBounces < 0)
@@ -56,9 +57,9 @@ public class BaseProjectile : Photon.PunBehaviour
 	}
 
 	[PunRPC]
-	protected virtual void SpawnFXRPC()
+	protected virtual void SpawnFXRPC(float xPos, float yPos, float zPos)
 	{
-		Instantiate(impactObject, transform.position, Quaternion.identity);
+		Instantiate(impactObject, new Vector3(xPos, yPos, zPos), Quaternion.identity);
 	}
 
 	protected virtual void Update()

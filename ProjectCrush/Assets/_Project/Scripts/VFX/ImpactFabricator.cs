@@ -12,13 +12,10 @@ public class ImpactFabricator : Photon.PunBehaviour
 
 	void Start()
 	{
-		if (PhotonNetwork.isMasterClient)
+		for (int i = 0; i < 3; i++)
 		{
-			for (int i = 0; i < 3; i++)
-			{
-				GameObject obj = Instantiate(puffObject, transform.position + new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized * .25f, Quaternion.identity);
-				obj.transform.parent = transform;
-			}
+			GameObject obj = Instantiate(puffObject, transform.position + new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized * .25f, Quaternion.identity);
+			obj.transform.parent = transform;
 		}
 	}
 
@@ -27,7 +24,8 @@ public class ImpactFabricator : Photon.PunBehaviour
 		if (lifeRemains <= 0)
 		{
 			Destroy(gameObject);
-		} else
+		}
+		else
 		{
 			lifeRemains -= Time.deltaTime;
 		}
