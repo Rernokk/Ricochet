@@ -68,6 +68,11 @@ public class PlayerManager : Photon.PunBehaviour
 		CurrentHealth -= amount;
 	}
 
+	public void GainAmmo(int amount)
+	{
+		currentAmmo += amount;
+	}
+
 	#endregion Public Methods
 
 	#region Private Methods

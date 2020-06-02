@@ -6,9 +6,11 @@ public class GameManager : Photon.PunBehaviour, IPunObservable
 {
 	[SerializeField]
 	private GameObject playerPrefab;
+	[SerializeField]
+	private GameObject bulletPickupPrefab;
 	int tick = 0;
 
-	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
 	{
 		if (stream.isWriting)
 		{
