@@ -1,28 +1,37 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public class GameManager : Photon.PunBehaviour, IPunObservable
+public class GameManager : Photon.PunBehaviour
 {
 	[SerializeField]
 	private GameObject playerPrefab;
-	int tick = 0;
 
-	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+	[SerializeField]
+	private GameObject leaderboardPrefab;
+	private LeaderboardManager leaderboardManager;
+
+	public void Start()
 	{
-		if (stream.isWriting)
+		GameObject myPlayer = PhotonNetwork.Instantiate(this.playerPrefab.name, new Vector3(Random.Range(-5f, 5f), 0, Random.Range(-5f, 5f)).normalized * 5f, Quaternion.identity, 0);
+		myPlayer.GetComponent<PlayerManager>().UpdatePlayerCustomizations();
+
+		//Master, spawn controllers.
+		if (PhotonNetwork.isMasterClient)
 		{
-			stream.SendNext(tick);
-		}
-		else
-		{
-			tick = (int)stream.ReceiveNext();
+			leaderboardManager = PhotonNetwork.Instantiate(this.leaderboardPrefab.name, Vector3.zero, Quaternion.identity, 0).GetComponent<LeaderboardManager>();
+			print("Is Master");
 		}
 	}
 
-	void Start()
+	public static void ReturnToMainMenu()
 	{
-		PhotonNetwork.Instantiate(this.playerPrefab.name, new Vector3(Random.Range(-5f, 5f), 0, Random.Range(-5f, 5f)).normalized * 5f, Quaternion.identity, 0);
-		tick++;
+		PhotonNetwork.LeaveRoom();
+	}
+
+	public override void OnLeftRoom()
+	{
+		SceneManager.LoadScene("MainMenu");
 	}
 }

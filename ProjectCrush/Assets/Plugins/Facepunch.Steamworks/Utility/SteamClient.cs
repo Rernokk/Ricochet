@@ -15,71 +15,83 @@ using UnityEngine;
 //
 public class SteamClient : MonoBehaviour
 {
-    public uint AppId;
+	public uint AppId;
 
-    private Facepunch.Steamworks.Client client;
+	private Facepunch.Steamworks.Client client;
 
-	void Start ()
-    {
-        // keep us around until the game closes
-        GameObject.DontDestroyOnLoad(gameObject);
+	[SerializeField]
+	private bool connToSteam = true;
 
-        if (AppId == 0)
-            throw new System.Exception("You need to set the AppId to your game");
+	public static bool IsConnected;
 
-        //
-        // Configure us for this unity platform
-        //
-        Facepunch.Steamworks.Config.ForUnity( Application.platform.ToString() );
+	void Awake()
+	{
+		if (!connToSteam)
+			return;
 
-        //
-        // Create a steam_appid.txt (this seems greasy as fuck, but this is exactly
-        // what UE's Steamworks plugin does, so fuck it.
-        //
-        try
-        {
-            System.IO.File.WriteAllText("steam_appid.txt", AppId.ToString());
-        }
-        catch ( System.Exception e )
-        {
-            Debug.LogWarning("Couldn't write steam_appid.txt: " + e.Message );
-        }
+		if (client != null)
+			return;
 
-        // Create the client
-        client = new Facepunch.Steamworks.Client( AppId );
+		// keep us around until the game closes
+		GameObject.DontDestroyOnLoad(gameObject);
 
-        if ( !client.IsValid )
-        {
-            client = null;
-            Debug.LogWarning("Couldn't initialize Steam");
-            return;
-        }
+		if (AppId == 0)
+			throw new System.Exception("You need to set the AppId to your game");
 
-        Debug.Log( "Steam Initialized: " + client.Username + " / " + client.SteamId ); 
+		//
+		// Configure us for this unity platform
+		//
+		Facepunch.Steamworks.Config.ForUnity(Application.platform.ToString());
+
+		//
+		// Create a steam_appid.txt (this seems greasy as fuck, but this is exactly
+		// what UE's Steamworks plugin does, so fuck it.
+		//
+		try
+		{
+			System.IO.File.WriteAllText("steam_appid.txt", AppId.ToString());
+		}
+		catch (System.Exception e)
+		{
+			Debug.LogWarning("Couldn't write steam_appid.txt: " + e.Message);
+		}
+
+		// Create the client
+		client = new Facepunch.Steamworks.Client(AppId);
+
+		if (!client.IsValid)
+		{
+			client = null;
+			Debug.LogWarning("Couldn't initialize Steam");
+			return;
+		}
+
+		Debug.Log("Steam Initialized: " + client.Username + " / " + client.SteamId);
+		IsConnected = true;
 	}
-	
+
 	void Update()
-    {
-        if (client == null)
-            return;
+	{
+		if (client == null)
+			return;
 
-        try
-        {
-            UnityEngine.Profiling.Profiler.BeginSample("Steam Update");
-            client.Update();
-        }
-        finally
-        {
-            UnityEngine.Profiling.Profiler.EndSample();
-        }
-    }
+		try
+		{
+			UnityEngine.Profiling.Profiler.BeginSample("Steam Update");
+			client.Update();
+		}
+		finally
+		{
+			UnityEngine.Profiling.Profiler.EndSample();
+		}
+	}
 
-    private void OnDestroy()
-    {
-        if (client != null)
-        {
-            client.Dispose();
-            client = null;
-        }
-    }
+	private void OnDestroy()
+	{
+		if (client != null)
+		{
+			client.Dispose();
+			client = null;
+		}
+	}
 }

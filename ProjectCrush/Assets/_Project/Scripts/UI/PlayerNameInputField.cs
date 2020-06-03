@@ -11,14 +11,24 @@ public class PlayerNameInputField : MonoBehaviour
 	// Start is called before the first frame update
 	void Start()
 	{
-		string defaultName = "";
 		InputField field = this.GetComponent<InputField>();
-		if (field != null)
+		string defaultName = "";
+		
+		if (Facepunch.Steamworks.Client.Instance != null)
 		{
-			if (PlayerPrefs.HasKey(playerNamePrefKey))
+			field.enabled = false;
+			defaultName = Facepunch.Steamworks.Client.Instance.Username;
+			field.text = defaultName;
+		}
+		else
+		{
+			if (field != null)
 			{
-				defaultName = PlayerPrefs.GetString(playerNamePrefKey);
-				field.text = defaultName;
+				if (PlayerPrefs.HasKey(playerNamePrefKey))
+				{
+					defaultName = PlayerPrefs.GetString(playerNamePrefKey);
+					field.text = defaultName;
+				}
 			}
 		}
 		PhotonNetwork.playerName = defaultName;
