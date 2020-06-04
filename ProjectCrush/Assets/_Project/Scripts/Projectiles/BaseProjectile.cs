@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BaseProjectile : Photon.PunBehaviour
+public class BaseProjectile : Photon.PunBehaviour, IPunObservable
 {
 	protected int remainingBounces = ProjectileSettings.DEFAULT_PROJECTILE_BOUNCE_MAX;
 	protected int damageToDeal = ProjectileSettings.DEFAULT_PROJECTILE_DAMAGE;
@@ -41,8 +41,12 @@ public class BaseProjectile : Photon.PunBehaviour
 		PlayerManager other = collision.transform.root.GetComponent<PlayerManager>();
 		if (other != null)
 		{
-			other.TakeDamage(damageToDeal);
-			DestroyProjectile();
+			if (photonView.isMine)
+			{
+				other.photonView.RPC("TakeDamageRPC", PhotonTargets.All, new object[] { damageToDeal, transform.position });
+				//other.TakeDamage(damageToDeal);
+				DestroyProjectile();
+			}
 		}
 		else
 		{
@@ -89,6 +93,18 @@ public class BaseProjectile : Photon.PunBehaviour
 		if (photonView.isMine)
 		{
 			PhotonNetwork.Destroy(gameObject);
+		}
+	}
+
+	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+	{
+		if (stream.isWriting)
+		{
+			stream.SendNext(remainingBounces);
+		}
+		else
+		{
+			remainingBounces = (int)stream.ReceiveNext();
 		}
 	}
 

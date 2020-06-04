@@ -15,10 +15,10 @@ TagManager:
   - 
   - 
   - MouseCollisionLayer
-  - 
-  - 
-  - 
-  - 
+  - VFXLayer
+  - PlayerLayer
+  - ProjectileLayer
+  - TerrainLayer
   - 
   - 
   - 

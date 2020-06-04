@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8067949351293824000}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -43,7 +43,7 @@ GameObject:
   - component: {fileID: 3283858902586563916}
   - component: {fileID: 3965514833130542317}
   - component: {fileID: 4431560266019945748}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -139,7 +139,7 @@ GameObject:
   - component: {fileID: 9218017839334194083}
   - component: {fileID: 7372586395962433945}
   - component: {fileID: 6657524762700823407}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: PlayerAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -314,6 +314,8 @@ MonoBehaviour:
     type: 3}
   playerUI: {fileID: 8951266664096482153, guid: 9976b02cc2e7bfd4cb9c2b3f33e1ae62,
     type: 3}
+  fracturePrefab: {fileID: 3016035668093276117, guid: eb3bf63b1f6dc4a48ab73785beca8ed6,
+    type: 3}
   currentAmmo: 5
   baseMesh: {fileID: 3965514833130542317}
 --- !u!1 &8942468574826641489
@@ -328,7 +330,7 @@ GameObject:
   - component: {fileID: 8942468574826641491}
   - component: {fileID: 8942468574826641488}
   - component: {fileID: 8942468574826641581}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Main Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
@@ -440,7 +442,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8942468575693309377}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: CamPivot
   m_TagString: Untagged
   m_Icon: {fileID: 0}

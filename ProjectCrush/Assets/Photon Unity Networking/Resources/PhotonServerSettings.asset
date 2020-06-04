@@ -28,9 +28,9 @@ MonoBehaviour:
   NetworkLogging: 1
   RunInBackground: 1
   RpcList:
-  - BasicTestRPC
   - Chat
   - DestroyRpc
+  - GrantKillRPC
   - InstantiateRpc
   - PickupItemInit
   - PunPickup
@@ -38,8 +38,7 @@ MonoBehaviour:
   - PunRespawn
   - RequestForPickupItems
   - RequestForPickupTimes
-  - FetchSteamID
-  - GrantKillRPC
   - SpawnFXRPC
+  - TakeDamageRPC
   - UpdateCustomizationsRPC
   DisableAutoOpenWizard: 1

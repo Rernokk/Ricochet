@@ -7,15 +7,15 @@ using Random = UnityEngine.Random;
 
 public class PlayerManager : Photon.PunBehaviour, IPunObservable
 {
-	[SerializeField]
-	private GameObject projectilePrefab;
+	[SerializeField] private GameObject projectilePrefab;
+	[SerializeField] private GameObject playerUI;
+	[SerializeField] private GameObject fracturePrefab;
 
-	[SerializeField]
-	private GameObject playerUI;
+	private CapsuleFracture fractureReference;
 
 	private float playerSpeed = PlayerCharacterSettings.PLAYER_SPEED;
 	private float ammoRegenTimer = PlayerCharacterSettings.AMMO_RECHARGE;
-	private float respawnTimer = PlayerCharacterSettings.RESPAWN_COUNTDOWN_SECONDS;
+	private float respawnTimerTrigger = 0;
 	private int currentHealth = PlayerCharacterSettings.MAX_HEALTH;
 
 	[SerializeField]
@@ -93,14 +93,16 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 	#endregion Properties;
 
 	#region Public Methods
-
 	public void TakeDamage(int amount)
 	{
 		CurrentHealth -= amount;
 		if(CurrentHealth <= 0)
         {
 			KillPlayer();
-        }
+			fractureReference = PhotonNetwork.Instantiate(fracturePrefab.name, transform.position, Quaternion.identity, 0).GetComponent<CapsuleFracture>();
+			fractureReference.TriggerDetonation();
+			respawnTimerTrigger = PlayerCharacterSettings.RESPAWN_TIMER;
+		}
 	}
 
 	// --------------------Should these be private or public??------------------------
@@ -160,15 +162,34 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 	}
 
 
+	[PunRPC]
+	public void TakeDamageRPC(int amnt, Vector3 pos)
+	{
+		if (photonView.isMine)
+		{
+			CurrentHealth -= amnt;
+			Debug.Log("Damage Taken, health remaining: " + CurrentHealth);
+			if (CurrentHealth <= 0 && respawnTimerTrigger <= 0f)
+			{
+				Debug.Log("Playing Death FX");
+				fractureReference = PhotonNetwork.Instantiate(fracturePrefab.name, transform.position, Quaternion.identity, 0).GetComponent<CapsuleFracture>();
+				fractureReference.TriggerDetonation();
+				respawnTimerTrigger = PlayerCharacterSettings.RESPAWN_TIMER;
+			}
+		}
+	}
+
 	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
 	{
 		if (stream.isWriting)
 		{
 			stream.SendNext(CurrentHealth);
+			stream.SendNext(respawnTimerTrigger);
 		}
 		else
 		{
 			CurrentHealth = (int)stream.ReceiveNext();
+			respawnTimerTrigger = (float)stream.ReceiveNext();
 		}
 	}
 
@@ -177,7 +198,7 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 		photonView.RPC("UpdateCustomizationsRPC", PhotonTargets.AllBuffered, new object[]
 		{ PlayerPrefs.GetFloat("PlayerRedChannel", 1), PlayerPrefs.GetFloat("PlayerGreenChannel", 1), PlayerPrefs.GetFloat("PlayerBlueChannel", 1), });
 	}
-	
+
 	[PunRPC]
 	private void UpdateCustomizationsRPC(float r, float g, float b)
 	{
@@ -213,6 +234,18 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 
 		ProcessInputs();
 		RegenerateAmmo();
+
+		if (fractureReference != null)
+		{
+			if (respawnTimerTrigger < 0f)
+			{
+				fractureReference.ResetShards();
+			}
+			else
+			{
+				respawnTimerTrigger -= Time.deltaTime;
+			}
+		}
 	}
 
 	private void ProcessInputs()
@@ -283,9 +316,9 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 	{
 		if (currentAmmo > 0)
 		{
-		Ray rayToSurface = Camera.main.ScreenPointToRay(inputPos);
-		RaycastHit info;
-		Physics.Raycast(rayToSurface, out info, 200f, LayerMask.GetMask("MouseCollisionLayer"));
+			Ray rayToSurface = Camera.main.ScreenPointToRay(inputPos);
+			RaycastHit info;
+			Physics.Raycast(rayToSurface, out info, 200f, LayerMask.GetMask("MouseCollisionLayer"));
 			if (info.transform != null)
 			{
 				Vector3 aimPos = info.point;
