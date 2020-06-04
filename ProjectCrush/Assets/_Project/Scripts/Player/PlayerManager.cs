@@ -15,10 +15,13 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 
 	private float playerSpeed = PlayerCharacterSettings.PLAYER_SPEED;
 	private float ammoRegenTimer = PlayerCharacterSettings.AMMO_RECHARGE;
+	private float respawnTimer = PlayerCharacterSettings.RESPAWN_COUNTDOWN_SECONDS;
 	private int currentHealth = PlayerCharacterSettings.MAX_HEALTH;
 
 	[SerializeField]
 	private int currentAmmo = PlayerCharacterSettings.MAX_AMMO;
+	private int currentLives = PlayerCharacterSettings.MAX_LIVES;
+	private Boolean isDisabled = false;
 
 	[SerializeField]
 	private MeshRenderer baseMesh;
@@ -54,6 +57,18 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 			}
 		}
 	}
+	public int CurrentLives
+    {
+        get
+        {
+			return currentLives;
+        }
+
+		set
+        {
+			currentLives = value;
+        }
+    }
 	public int MaxHealth
 	{
 		get
@@ -68,6 +83,13 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 			return PlayerCharacterSettings.MAX_AMMO;
 		}
 	}
+	public int MaxLives
+    {
+        get
+        {
+			return PlayerCharacterSettings.MAX_LIVES;
+        }
+    }
 	#endregion Properties;
 
 	#region Public Methods
@@ -75,7 +97,68 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 	public void TakeDamage(int amount)
 	{
 		CurrentHealth -= amount;
+		if(CurrentHealth <= 0)
+        {
+			KillPlayer();
+        }
 	}
+
+	// --------------------Should these be private or public??------------------------
+
+	public void DisablePlayer()
+    {
+		isDisabled = true;
+		Debug.Log("Disable Player");
+    }
+
+	//TODO: Display interface for appropriate players
+	public void KillPlayer()
+    {
+		// Disables the player, effectively 'killing' them
+		DisablePlayer();
+
+		// Decrement lives
+		CurrentLives -= 1;
+
+		// If out of lives, display GameOver interface 
+		// (should probably cause event so that both players recieve user specified interfaces based on who won)
+		if(CurrentLives <= 0)
+        {
+			Debug.Log($"GAME OVER - Lives: {CurrentLives}");
+		}
+        else
+        {
+			RespawnPlayer();
+        }
+    }
+
+	public void RespawnPlayer()
+    {
+		//TODO: Couple seconds of immunity, and can't attack
+
+		// Wait for timer to run out
+		while (RespawnTimer())
+        {
+			Debug.Log("Waiting to respawn...");
+        }
+
+		// Reset values
+		respawnTimer = PlayerCharacterSettings.RESPAWN_COUNTDOWN_SECONDS;
+		currentHealth = PlayerCharacterSettings.MAX_HEALTH;
+		currentAmmo = PlayerCharacterSettings.MAX_AMMO;
+		isDisabled = false;
+
+		// Move the player to a random position
+		int minDist = 3;
+		int maxDist = 8;
+
+		Vector3 anchorPos = Vector3.zero;
+		Vector3 randomDir = new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-1f, 1f)).normalized;
+		float respawnPoint = UnityEngine.Random.Range(minDist, maxDist);
+		transform.position = anchorPos + randomDir * respawnPoint;
+
+	}
+
 
 	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
 	{
@@ -122,6 +205,11 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 		{
 			return;
 		}
+
+		if (isDisabled)
+        {
+			return;
+        }
 
 		ProcessInputs();
 		RegenerateAmmo();
@@ -245,6 +333,22 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 		//TODO: Signal out of Ammo;
 		Debug.Log("Out of Ammo!");
 	}
+
+	private bool RespawnTimer()
+    {
+		respawnTimer -= Time.deltaTime;
+		
+		if(respawnTimer <= 0)
+        {
+			Debug.Log("Respawning...");
+			return false;
+        }
+        else
+        {
+			Debug.Log($"Respawning in {respawnTimer} seconds");
+			return true;
+        }
+    }
 
 	#endregion Private Methods
 }
