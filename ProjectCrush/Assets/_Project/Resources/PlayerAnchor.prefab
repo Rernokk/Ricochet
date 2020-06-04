@@ -184,6 +184,7 @@ MonoBehaviour:
   ownershipTransfer: 0
   ObservedComponents:
   - {fileID: 9218017839334194083}
+  - {fileID: 6657524762700823407}
   ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
   instantiationId: -1
@@ -201,7 +202,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99fc538f7d1af73409ba5cb4b207b11c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  refCam: {fileID: 8942468574826641489}
+  objectsToDisable:
+  - {fileID: 8942468574826641489}
 --- !u!114 &9218017839334194083
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -271,7 +273,7 @@ MonoBehaviour:
     ExtrapolateNumberOfStoredPositions: 1
     DrawErrorGizmo: 1
   m_RotationModel:
-    SynchronizeEnabled: 0
+    SynchronizeEnabled: 1
     InterpolateOption: 1
     InterpolateRotateTowardsSpeed: 180
     InterpolateLerpSpeed: 5
@@ -310,6 +312,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   projectilePrefab: {fileID: 1107739510947376610, guid: 0b28aab3d7ddd994eb66829ebc6783e1,
     type: 3}
+  playerUI: {fileID: 8951266664096482153, guid: 9976b02cc2e7bfd4cb9c2b3f33e1ae62,
+    type: 3}
+  currentAmmo: 5
+  baseMesh: {fileID: 3965514833130542317}
 --- !u!1 &8942468574826641489
 GameObject:
   m_ObjectHideFlags: 0

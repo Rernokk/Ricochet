@@ -1,21 +1,30 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using UnityEngine;
+using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
-public class PlayerManager : Photon.PunBehaviour
+public class PlayerManager : Photon.PunBehaviour, IPunObservable
 {
 	[SerializeField]
 	private GameObject projectilePrefab;
+
+	[SerializeField]
+	private GameObject playerUI;
 
 	private float playerSpeed = PlayerCharacterSettings.PLAYER_SPEED;
 	private float ammoRegenTimer = PlayerCharacterSettings.AMMO_RECHARGE;
 	private float respawnTimer = PlayerCharacterSettings.RESPAWN_COUNTDOWN_SECONDS;
 	private int currentHealth = PlayerCharacterSettings.MAX_HEALTH;
+
+	[SerializeField]
 	private int currentAmmo = PlayerCharacterSettings.MAX_AMMO;
 	private int currentLives = PlayerCharacterSettings.MAX_LIVES;
 	private Boolean isDisabled = false;
+
+	[SerializeField]
+	private MeshRenderer baseMesh;
 
 	private Rigidbody rgd;
 
@@ -151,6 +160,30 @@ public class PlayerManager : Photon.PunBehaviour
 	}
 
 
+	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+	{
+		if (stream.isWriting)
+		{
+			stream.SendNext(CurrentHealth);
+		}
+		else
+		{
+			CurrentHealth = (int)stream.ReceiveNext();
+		}
+	}
+
+	public void UpdatePlayerCustomizations()
+	{
+		photonView.RPC("UpdateCustomizationsRPC", PhotonTargets.AllBuffered, new object[]
+		{ PlayerPrefs.GetFloat("PlayerRedChannel", 1), PlayerPrefs.GetFloat("PlayerGreenChannel", 1), PlayerPrefs.GetFloat("PlayerBlueChannel", 1), });
+	}
+	
+	[PunRPC]
+	private void UpdateCustomizationsRPC(float r, float g, float b)
+	{
+		baseMesh.material.color = new Color(r, g, b);
+	}
+
 	#endregion Public Methods
 
 	#region Private Methods
@@ -158,11 +191,17 @@ public class PlayerManager : Photon.PunBehaviour
 	private void Start()
 	{
 		rgd = transform.GetComponent<Rigidbody>();
+
+		if (photonView.isMine)
+		{
+			playerUI = Instantiate(playerUI, Vector3.zero, Quaternion.identity);
+			playerUI.GetComponent<UIController>().PlayerReference = this;
+		}
 	}
 
 	private void Update()
 	{
-		if (!this.transform.root.GetComponent<PhotonView>().isMine)
+		if (!photonView.isMine)
 		{
 			return;
 		}
@@ -232,6 +271,11 @@ public class PlayerManager : Photon.PunBehaviour
 		if (Input.GetKeyDown(KeyCode.Mouse0))
 		{
 			FireProjectile(Input.mousePosition);
+		}
+
+		if (Input.GetKeyDown(KeyCode.L))
+		{
+			GameManager.ReturnToMainMenu();
 		}
 	}
 

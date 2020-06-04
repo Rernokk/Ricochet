@@ -5,7 +5,8 @@ using UnityEngine;
 
 public class NetworkLauncher : Photon.PunBehaviour
 {
-	bool isConnecting;
+	private bool isConnecting;
+
 	public void ExitGame()
 	{
 		Application.Quit();
@@ -22,7 +23,8 @@ public class NetworkLauncher : Photon.PunBehaviour
 		if (PhotonNetwork.connected)
 		{
 			PhotonNetwork.JoinRandomRoom();
-		} else
+		}
+		else
 		{
 			print("Connecting to Master");
 			isConnecting = PhotonNetwork.ConnectUsingSettings(NetworkSettings.GAME_VERSION);
