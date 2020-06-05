@@ -15,7 +15,7 @@ public class GameManager : Photon.PunBehaviour
 	public void Start()
 	{
 		GameObject myPlayer = PhotonNetwork.Instantiate(this.playerPrefab.name, new Vector3(Random.Range(-5f, 5f), 0, Random.Range(-5f, 5f)).normalized * 5f, Quaternion.identity, 0);
-		myPlayer.GetComponent<PlayerManager>().UpdatePlayerCustomizations();
+		myPlayer.GetComponent<PlayerController>().UpdatePlayerCustomizations();
 
 		//Master, spawn controllers.
 		if (PhotonNetwork.isMasterClient)

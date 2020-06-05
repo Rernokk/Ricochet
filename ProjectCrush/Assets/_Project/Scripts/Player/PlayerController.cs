@@ -5,23 +5,27 @@ using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
-public class PlayerManager : Photon.PunBehaviour, IPunObservable
+public class PlayerController : Photon.PunBehaviour, IPunObservable
 {
-	[SerializeField]
-	private GameObject projectilePrefab;
+	[SerializeField] private GameObject projectilePrefab;
+	[SerializeField] private GameObject playerUI;
+	[SerializeField] private GameObject fracturePrefab;
+	[SerializeField] private GameObject playerModelRoot;
 
-	[SerializeField]
-	private GameObject playerUI;
+	private CapsuleFracture fractureReference;
 
 	private float playerSpeed = PlayerCharacterSettings.PLAYER_SPEED;
 	private float ammoRegenTimer = PlayerCharacterSettings.AMMO_RECHARGE;
-	private float respawnTimer = PlayerCharacterSettings.RESPAWN_COUNTDOWN_SECONDS;
+	private float respawnTimerTrigger = 0;
 	private int currentHealth = PlayerCharacterSettings.MAX_HEALTH;
 
 	[SerializeField]
 	private int currentAmmo = PlayerCharacterSettings.MAX_AMMO;
 	private int currentLives = PlayerCharacterSettings.MAX_LIVES;
 	private Boolean isDisabled = false;
+	private bool isGameOver = false;
+	private bool isLocked = false;
+
 
 	[SerializeField]
 	private MeshRenderer baseMesh;
@@ -29,6 +33,36 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 	private Rigidbody rgd;
 
 	#region Properties
+
+	public bool IsLocked
+	{
+		get
+		{
+			return isLocked;
+		}
+
+		set
+		{
+			isLocked = value;
+		}
+	}
+
+	public bool IsDisabled
+	{
+		get
+		{
+			return isDisabled;
+		}
+	}
+
+	public float RespawnTimerTrigger
+	{
+		get
+		{ 
+			return respawnTimerTrigger;
+		}
+	}
+
 	public int CurrentHealth
 	{
 		get
@@ -58,17 +92,17 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 		}
 	}
 	public int CurrentLives
-    {
-        get
-        {
+	{
+		get
+		{
 			return currentLives;
-        }
+		}
 
 		set
-        {
+		{
 			currentLives = value;
-        }
-    }
+		}
+	}
 	public int MaxHealth
 	{
 		get
@@ -84,36 +118,73 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 		}
 	}
 	public int MaxLives
-    {
-        get
-        {
+	{
+		get
+		{
 			return PlayerCharacterSettings.MAX_LIVES;
-        }
-    }
+		}
+	}
 	#endregion Properties;
 
 	#region Public Methods
-
 	public void TakeDamage(int amount)
 	{
 		CurrentHealth -= amount;
-		if(CurrentHealth <= 0)
-        {
+		if (CurrentHealth <= 0)
+		{
+			fractureReference = PhotonNetwork.Instantiate(fracturePrefab.name, transform.position, Quaternion.identity, 0).GetComponent<CapsuleFracture>();
+			fractureReference.TriggerDetonation();
+			respawnTimerTrigger = PlayerCharacterSettings.RESPAWN_COUNTDOWN_SECONDS;
 			KillPlayer();
-        }
+		}
 	}
 
-	// --------------------Should these be private or public??------------------------
+	public void EnablePlayer()
+	{
+		isDisabled = false;
+		photonView.RPC("EnablePlayerRPC", PhotonTargets.All);
+		Debug.Log("Enable Player");
+	}
 
 	public void DisablePlayer()
-    {
+	{
 		isDisabled = true;
+		photonView.RPC("DisablePlayerRPC", PhotonTargets.All);
 		Debug.Log("Disable Player");
-    }
+	}
+	public void DisablePlayer(bool gameOver)
+	{
+		isDisabled = true;
+		isGameOver = gameOver;
+		photonView.RPC("DisablePlayerRPC", PhotonTargets.All);
+		Debug.Log("Disable Player");
+	}
+
+	public void LockPlayerControls()
+	{
+		print("Locking player controls.");
+		isLocked = true;
+	}
+	public void UnlockPlayerControls()
+	{
+		isLocked = false;
+	}
+
+	[PunRPC]
+	private void DisablePlayerRPC()
+	{
+		playerModelRoot.SetActive(false);
+	}
+
+	[PunRPC]
+	private void EnablePlayerRPC()
+	{
+		playerModelRoot.SetActive(true);
+	}
 
 	//TODO: Display interface for appropriate players
 	public void KillPlayer()
-    {
+	{
 		// Disables the player, effectively 'killing' them
 		DisablePlayer();
 
@@ -122,53 +193,84 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 
 		// If out of lives, display GameOver interface 
 		// (should probably cause event so that both players recieve user specified interfaces based on who won)
-		if(CurrentLives <= 0)
-        {
+		if (CurrentLives <= 0)
+		{
 			Debug.Log($"GAME OVER - Lives: {CurrentLives}");
 		}
-        else
-        {
-			RespawnPlayer();
-        }
-    }
-
-	public void RespawnPlayer()
-    {
-		//TODO: Couple seconds of immunity, and can't attack
-
-		// Wait for timer to run out
-		while (RespawnTimer())
-        {
-			Debug.Log("Waiting to respawn...");
-        }
-
-		// Reset values
-		respawnTimer = PlayerCharacterSettings.RESPAWN_COUNTDOWN_SECONDS;
-		currentHealth = PlayerCharacterSettings.MAX_HEALTH;
-		currentAmmo = PlayerCharacterSettings.MAX_AMMO;
-		isDisabled = false;
-
-		// Move the player to a random position
-		int minDist = 3;
-		int maxDist = 8;
-
-		Vector3 anchorPos = Vector3.zero;
-		Vector3 randomDir = new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-1f, 1f)).normalized;
-		float respawnPoint = UnityEngine.Random.Range(minDist, maxDist);
-		transform.position = anchorPos + randomDir * respawnPoint;
-
+		else
+		{
+			//RespawnPlayer();
+		}
 	}
 
+	public void RespawnPlayer()
+	{
+		//TODO: Couple seconds of immunity, and can't attack
+		if (isGameOver)
+			return;
+
+		// Wait for timer to run out
+		if (RespawnTimer())
+		{
+			//Debug.Log("Waiting to respawn...");
+		}
+		else
+		{
+			// Reset values
+			respawnTimerTrigger = 0f;
+			CurrentHealth = PlayerCharacterSettings.MAX_HEALTH;
+			CurrentAmmo = PlayerCharacterSettings.MAX_AMMO;
+			isDisabled = false;
+
+			// Move the player to a random position
+			int minDist = 3;
+			int maxDist = 8;
+
+			//Re-enable Model
+			photonView.RPC("EnablePlayerRPC", PhotonTargets.All);
+
+			Vector3 anchorPos = Vector3.zero;
+			Vector3 randomDir = new Vector3(Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-1f, 1f)).normalized;
+			float respawnPoint = Random.Range(minDist, maxDist);
+			transform.position = anchorPos + randomDir * respawnPoint;
+
+			if (fractureReference != null)
+				fractureReference.ResetShards();
+		}
+	}
+
+
+	[PunRPC]
+	public void TakeDamageRPC(int amnt, Vector3 pos)
+	{
+		if (photonView.isMine)
+		{
+			CurrentHealth -= amnt;
+			if (CurrentHealth <= 0)
+			{
+				fractureReference = PhotonNetwork.Instantiate(fracturePrefab.name, transform.position + Vector3.up, Quaternion.identity, 0).GetComponent<CapsuleFracture>();
+				fractureReference.TriggerDetonation();
+				respawnTimerTrigger = PlayerCharacterSettings.RESPAWN_COUNTDOWN_SECONDS;
+				KillPlayer();
+			}
+		}
+	}
 
 	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
 	{
 		if (stream.isWriting)
 		{
 			stream.SendNext(CurrentHealth);
+			stream.SendNext(respawnTimerTrigger);
+			stream.SendNext(isDisabled);
+			stream.SendNext(isLocked);
 		}
 		else
 		{
 			CurrentHealth = (int)stream.ReceiveNext();
+			respawnTimerTrigger = (float)stream.ReceiveNext();
+			isDisabled = (bool)stream.ReceiveNext();
+			isLocked = (bool)stream.ReceiveNext();
 		}
 	}
 
@@ -177,7 +279,7 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 		photonView.RPC("UpdateCustomizationsRPC", PhotonTargets.AllBuffered, new object[]
 		{ PlayerPrefs.GetFloat("PlayerRedChannel", 1), PlayerPrefs.GetFloat("PlayerGreenChannel", 1), PlayerPrefs.GetFloat("PlayerBlueChannel", 1), });
 	}
-	
+
 	[PunRPC]
 	private void UpdateCustomizationsRPC(float r, float g, float b)
 	{
@@ -206,13 +308,17 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 			return;
 		}
 
-		if (isDisabled)
-        {
-			return;
-        }
 
-		ProcessInputs();
-		RegenerateAmmo();
+		if (isDisabled)
+		{
+			RespawnPlayer();
+			return;
+		}
+		else if (!isLocked)
+		{
+			ProcessInputs();
+			RegenerateAmmo();
+		}
 	}
 
 	private void ProcessInputs()
@@ -283,9 +389,9 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 	{
 		if (currentAmmo > 0)
 		{
-		Ray rayToSurface = Camera.main.ScreenPointToRay(inputPos);
-		RaycastHit info;
-		Physics.Raycast(rayToSurface, out info, 200f, LayerMask.GetMask("MouseCollisionLayer"));
+			Ray rayToSurface = Camera.main.ScreenPointToRay(inputPos);
+			RaycastHit info;
+			Physics.Raycast(rayToSurface, out info, 200f, LayerMask.GetMask("MouseCollisionLayer"));
 			if (info.transform != null)
 			{
 				Vector3 aimPos = info.point;
@@ -335,20 +441,20 @@ public class PlayerManager : Photon.PunBehaviour, IPunObservable
 	}
 
 	private bool RespawnTimer()
-    {
-		respawnTimer -= Time.deltaTime;
-		
-		if(respawnTimer <= 0)
-        {
-			Debug.Log("Respawning...");
+	{
+		respawnTimerTrigger -= Time.deltaTime;
+
+		if (respawnTimerTrigger <= 0)
+		{
+			//Debug.Log("Respawning...");
 			return false;
-        }
-        else
-        {
-			Debug.Log($"Respawning in {respawnTimer} seconds");
+		}
+		else
+		{
+			//Debug.Log($"Respawning in {respawnTimerTrigger} seconds");
 			return true;
-        }
-    }
+		}
+	}
 
 	#endregion Private Methods
 }

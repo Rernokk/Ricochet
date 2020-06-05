@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BaseProjectile : Photon.PunBehaviour
+public class BaseProjectile : Photon.PunBehaviour, IPunObservable
 {
 	protected int remainingBounces = ProjectileSettings.DEFAULT_PROJECTILE_BOUNCE_MAX;
 	protected int damageToDeal = ProjectileSettings.DEFAULT_PROJECTILE_DAMAGE;
@@ -38,11 +38,15 @@ public class BaseProjectile : Photon.PunBehaviour
 	protected virtual void OnCollisionEnter(Collision collision)
 	{
 		remainingBounces--;
-		PlayerManager other = collision.transform.root.GetComponent<PlayerManager>();
+		PlayerController other = collision.transform.root.GetComponent<PlayerController>();
 		if (other != null)
 		{
-			other.TakeDamage(damageToDeal);
-			DestroyProjectile();
+			if (photonView.isMine)
+			{
+				other.photonView.RPC("TakeDamageRPC", PhotonTargets.All, new object[] { damageToDeal, transform.position });
+				//other.TakeDamage(damageToDeal);
+				DestroyProjectile(other);
+			}
 		}
 		else
 		{
@@ -77,18 +81,33 @@ public class BaseProjectile : Photon.PunBehaviour
 		}
 	}
 
-	protected virtual void DestroyProjectile()
+	protected virtual void DestroyProjectile(PlayerController other = null)
 	{
 		if (!photonView.isMine)
 			return;
 
 		LeaderboardManager mgr = GameObject.FindGameObjectWithTag("LeaderboardManager").GetComponent<LeaderboardManager>();
-		mgr.GrantKillToPlayer(PhotonNetwork.player.ID);
+		if (other != null && other.CurrentHealth < damageToDeal)
+		{
+			mgr.GrantKillToPlayer(PhotonNetwork.player.ID);
+		}
 
 		// Owner of object deletes projectile.
 		if (photonView.isMine)
 		{
 			PhotonNetwork.Destroy(gameObject);
+		}
+	}
+
+	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+	{
+		if (stream.isWriting)
+		{
+			stream.SendNext(remainingBounces);
+		}
+		else
+		{
+			remainingBounces = (int)stream.ReceiveNext();
 		}
 	}
 
