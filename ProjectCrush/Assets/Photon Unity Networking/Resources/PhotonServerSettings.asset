@@ -39,6 +39,15 @@ MonoBehaviour:
   - RequestForPickupItems
   - RequestForPickupTimes
   - SpawnFXRPC
-  - TakeDamageRPC
   - UpdateCustomizationsRPC
+  - TakeDamageRPC
+  - DisablePlayerRPC
+  - EnablePlayerRPC
+  - SendGameModeRPC
+  - TriggerGameOver
+  - TriggerGameOverRPC
+  - DisablePlayerControls
+  - EnablePlayerControls
+  - MatchStartLockPlayer
+  - MatchStartUnlockPlayer
   DisableAutoOpenWizard: 1

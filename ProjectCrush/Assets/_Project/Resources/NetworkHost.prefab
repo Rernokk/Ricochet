@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: -6225804801113441532}
   - component: {fileID: 468088866866645694}
   - component: {fileID: 2072929767482856539}
+  - component: {fileID: -602429602044648503}
   m_Layer: 0
   m_Name: NetworkHost
   m_TagString: LeaderboardManager
@@ -84,6 +85,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6c2d48c2084578d46992b20866b87579, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-602429602044648503
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3087692503742232903}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b484c7096a684145b8cc79c83406b67, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &7830496295842917061

@@ -38,14 +38,14 @@ public class BaseProjectile : Photon.PunBehaviour, IPunObservable
 	protected virtual void OnCollisionEnter(Collision collision)
 	{
 		remainingBounces--;
-		PlayerManager other = collision.transform.root.GetComponent<PlayerManager>();
+		PlayerController other = collision.transform.root.GetComponent<PlayerController>();
 		if (other != null)
 		{
 			if (photonView.isMine)
 			{
 				other.photonView.RPC("TakeDamageRPC", PhotonTargets.All, new object[] { damageToDeal, transform.position });
 				//other.TakeDamage(damageToDeal);
-				DestroyProjectile();
+				DestroyProjectile(other);
 			}
 		}
 		else
@@ -81,13 +81,16 @@ public class BaseProjectile : Photon.PunBehaviour, IPunObservable
 		}
 	}
 
-	protected virtual void DestroyProjectile()
+	protected virtual void DestroyProjectile(PlayerController other = null)
 	{
 		if (!photonView.isMine)
 			return;
 
 		LeaderboardManager mgr = GameObject.FindGameObjectWithTag("LeaderboardManager").GetComponent<LeaderboardManager>();
-		mgr.GrantKillToPlayer(PhotonNetwork.player.ID);
+		if (other != null && other.CurrentHealth < damageToDeal)
+		{
+			mgr.GrantKillToPlayer(PhotonNetwork.player.ID);
+		}
 
 		// Owner of object deletes projectile.
 		if (photonView.isMine)

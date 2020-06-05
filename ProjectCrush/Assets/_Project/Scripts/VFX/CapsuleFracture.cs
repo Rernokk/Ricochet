@@ -21,7 +21,7 @@ public class CapsuleFracture : Photon.PunBehaviour
 			Transform childObj = transform.GetChild(i);
 			Rigidbody rgd = childObj.gameObject.GetComponent<Rigidbody>();
 			rgd.useGravity = true;
-			rgd.AddExplosionForce(1500f, transform.position + localOffset, 3f);
+			rgd.AddExplosionForce(200f, transform.position + localOffset, 3f);
 			rgd.angularVelocity = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized * Random.Range(-30f, 30f);
 		}
 	}
@@ -33,7 +33,7 @@ public class CapsuleFracture : Photon.PunBehaviour
 			Transform childObj = transform.GetChild(i);
 			Rigidbody rgd = childObj.gameObject.GetComponent<Rigidbody>();
 			rgd.useGravity = true;
-			rgd.AddExplosionForce(500f, detPos, 10f);
+			rgd.AddExplosionForce(200f, detPos, 10f);
 			rgd.angularVelocity = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized * Random.Range(-30f, 30f);
 		}
 	}

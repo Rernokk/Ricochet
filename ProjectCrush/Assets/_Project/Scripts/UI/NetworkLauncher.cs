@@ -56,7 +56,10 @@ public class NetworkLauncher : Photon.PunBehaviour
 	public override void OnPhotonRandomJoinFailed(object[] codeAndMsg)
 	{
 		print("Failed to join room... Creating new match.");
-		PhotonNetwork.CreateRoom(null, new RoomOptions() { MaxPlayers = NetworkSettings.MAX_PLAYER_COUNT }, null);
+		RoomOptions roomOpts = new RoomOptions() { MaxPlayers = GameModeSettings.MAX_PLAYER_COUNT };
+		roomOpts.CustomRoomProperties = new ExitGames.Client.Photon.Hashtable();
+		roomOpts.CustomRoomProperties.Add("GAMEMODE", GameModeSettings.GameMode.OneVOne);
+		PhotonNetwork.CreateRoom(null, roomOpts, null);
 	}
 
 	private void Awake()
